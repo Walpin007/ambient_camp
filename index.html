@@ -25,7 +25,7 @@ button{appearance:none;border:2px solid var(--line);border-radius:0;background:#
 <main id="game"><section class="box stage"><div id="scene"></div><button id="menuBtn" class="menuBtn">MENU</button><div id="dungeonHud" class="hudCenter"><div id="topFloor" class="floor"></div><div id="topSub" class="hudTheme"></div></div><div id="modeText" class="modeHud">OFF</div><div id="message" class="message"></div><div id="wellnessBadge" class="wellnessBadge"></div><div id="nightActions" class="nightActions"></div><div id="ticker" class="ticker"><span id="tickerText"></span></div><div id="modal" class="modal"><div id="modalPanel" class="modalPanel"></div></div></section><section id="controls" class="controls"></section></main>
 <script>
 "use strict";
-const APP_VERSION="v0.3.4";
+const APP_VERSION="v0.3.5";
 const CFG={SAVE:"workday_ambient_v01",DEMO:true,DEMO_MINUTE_MS:500,WORK_MIN:480,WELLNESS_AT:50,WELLNESS_LEN:1,CYCLE:60,DINNER_MIN:30,MOVE_EVERY_MIN:2,MAX_PARTY:6,MAX_CHARACTERS:15,RARE_PER_WORKDAY:1};
 const THEMES=["폐허","용암","늪·수로","숲","보석·금광"];const TRAITS=["커피광","잠꾸러기","수다쟁이","과묵함","길치","호기심","겁쟁이","성급함","느긋함","먹보","깔끔함","덤벙댐","허세","장난꾸러기","꼼꼼함","부지런함","야행성","아침형","흥부자","긍정왕"];
 const $=s=>document.querySelector(s);const scene=$("#scene"),controls=$("#controls"),modal=$("#modal"),panel=$("#modalPanel"),msg=$("#message"),nightActions=$("#nightActions"),ticker=$("#ticker"),tickerText=$("#tickerText");
@@ -54,15 +54,15 @@ function minuteTick(){if(S.screen!=="dungeon"||S.pausedExpedition)return;let d=C
    - 행동: 성공/실패 없이 캐릭터 성격과 상호작용을 보여준다. */
 const JUDGMENT_EVENTS={
  treasure:{label:"보물상자",stats:["LUK"],traits:{
-  "호기심":{success:["{name}은 호기심을 참지 못하고 상자를 샅샅이 살폈습니다. 숨겨진 장치를 찾아내 상자를 열었습니다!"],fail:["{name}은 호기심에 상자를 이리저리 만져봤지만 아무것도 알아내지 못했습니다."]},
-  "성급함":{success:["{name}은 성급하게 상자를 열어젖혔습니다. 놀랍게도 아무 문제 없이 열렸습니다!"],fail:["{name}은 확인도 하지 않고 상자를 열었습니다. 역시 함정이었습니다."]},
-  "꼼꼼함":{success:["{name}은 상자의 구조를 꼼꼼하게 살펴 안전하게 잠금장치를 풀었습니다."],fail:["{name}은 한참 동안 상자를 살펴봤지만 결국 잠금장치를 풀지 못했습니다."]}
- },success:["{name}이 보물상자의 잠금장치를 풀었습니다!"],fail:["{name}이 보물상자를 살펴봤지만 열지 못했습니다."]},
+  "호기심":{success:["{name:은} 호기심을 참지 못하고 상자를 샅샅이 살폈습니다. 숨겨진 장치를 찾아내 상자를 열었습니다!"],fail:["{name:은} 호기심에 상자를 이리저리 만져봤지만 아무것도 알아내지 못했습니다."]},
+  "성급함":{success:["{name:은} 성급하게 상자를 열어젖혔습니다. 놀랍게도 아무 문제 없이 열렸습니다!"],fail:["{name:은} 확인도 하지 않고 상자를 열었습니다. 역시 함정이었습니다."]},
+  "꼼꼼함":{success:["{name:은} 상자의 구조를 꼼꼼하게 살펴 안전하게 잠금장치를 풀었습니다."],fail:["{name:은} 한참 동안 상자를 살펴봤지만 결국 잠금장치를 풀지 못했습니다."]}
+ },success:["{name:이} 보물상자의 잠금장치를 풀었습니다!"],fail:["{name:이} 보물상자를 살펴봤지만 열지 못했습니다."]},
  trap:{label:"함정",stats:["DEX"],traits:{
-  "덤벙댐":{success:["{name}은 함정을 밟을 뻔했지만 우연히 발을 빼 피했습니다!"],fail:["{name}은 수상한 바닥을 보지 못하고 그대로 밟아버렸습니다."]},
-  "꼼꼼함":{success:["{name}은 바닥의 미세한 흔적을 꼼꼼히 확인해 함정을 찾아냈습니다."],fail:["{name}은 꼼꼼하게 살폈는데도 교묘하게 숨은 함정을 놓쳤습니다."]},
-  "성급함":{success:["{name}은 성급하게 지나갔지만 운 좋게 함정을 비껴갔습니다."],fail:["{name}은 앞만 보고 서두르다 함정을 건드렸습니다."]}
- },success:["{name}이 함정을 발견해 파티를 멈춰 세웠습니다."],fail:["{name}이 함정을 미처 발견하지 못했습니다. 다행히 큰 피해는 없습니다."]}
+  "덤벙댐":{success:["{name:은} 함정을 밟을 뻔했지만 우연히 발을 빼 피했습니다!"],fail:["{name:은} 수상한 바닥을 보지 못하고 그대로 밟아버렸습니다."]},
+  "꼼꼼함":{success:["{name:은} 바닥의 미세한 흔적을 꼼꼼히 확인해 함정을 찾아냈습니다."],fail:["{name:은} 꼼꼼하게 살폈는데도 교묘하게 숨은 함정을 놓쳤습니다."]},
+  "성급함":{success:["{name:은} 성급하게 지나갔지만 운 좋게 함정을 비껴갔습니다."],fail:["{name:은} 앞만 보고 서두르다 함정을 건드렸습니다."]}
+ },success:["{name:이} 함정을 발견해 파티를 멈춰 세웠습니다."],fail:["{name:이} 함정을 미처 발견하지 못했습니다. 다행히 큰 피해는 없습니다."]}
 };
 const ENVIRONMENT_EVENTS={
  collapse:{label:"바닥 붕괴",texts:["갑자기 바닥이 무너졌습니다! 파티가 아래층으로 떨어집니다.","낡은 바닥이 굉음과 함께 붕괴했습니다. 파티가 뜻밖의 아래층에 도착했습니다."],effect:"collapse"},
@@ -102,16 +102,17 @@ function secondActor(first){const p=activeParty().filter(c=>c.id!==first?.id);re
 function relativeStat(actor,key){const p=activeParty(),max=Math.max(1,...p.map(c=>Number(c.stats?.[key])||1)),value=Math.max(1,Number(actor.stats?.[key])||1);return Math.min(1,value/max)}
 function successChance(r){return r<=.10?.30:r<=.80?.50:.70}
 function hasBatchim(name){const ch=(name||"").slice(-1),code=ch.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28!==0;return null}
-function particle(name,pair){const [withB,withoutB]=pair.split('/'),b=hasBatchim(name);return name+(b===null?`(${withoutB})`:b?withB:withoutB)}
+function particle(name,pair){const [withB,withoutB]=pair.split('/');if(withB===withoutB)return name+withB;return name+withB+`(${withoutB})`}
 function fillText(t,a,b){const A=a?.name||'누군가',B=b?.name||'동료';const forms={이:'이/가',은:'은/는',을:'을/를',과:'과/와',에게:'에게/에게',의:'의/의',뿐:'뿐/뿐'};return t.replace(/\{(name|a|b):([^}]+)\}/g,(_,who,key)=>particle(who==='b'?B:A,forms[key]||`${key}/${key}`)).replaceAll('{name}',A).replaceAll('{a}',A).replaceAll('{b}',B)}
 function judgmentText(ev,actor,ok){const related=(actor.traits||[]).filter(t=>ev.traits?.[t]);const trait=related.length?pick(related):null;const pool=trait?ev.traits[trait][ok?'success':'fail']:ev[ok?'success':'fail'];return fillText(pick(pool),actor)}
 function runJudgmentEvent(type){const ev=JUDGMENT_EVENTS[type],actor=eventActor();if(!ev||!actor)return;const stat=pick(ev.stats),ratio=relativeStat(actor,stat),chance=successChance(ratio),ok=Math.random()<chance;let text=judgmentText(ev,actor,ok);if(type==='treasure'&&ok){const g=2+Math.floor(Math.random()*7);if(S.phase==='work'){S.goldFound+=g;text+=` +${g}G`}else{S.otCoin+=1;text+=' 야근수당 +1◆'}}addLog(`[${ev.label}] ${text}`,'event');if(Math.random()<.70)say(text,5000)}
-function runEnvironmentEvent(type){const ev=ENVIRONMENT_EVENTS[type];if(!ev)return;let text=pick(ev.texts);if(ev.effect==='collapse'){const jump=1+Math.floor(Math.random()*3),old=S.floor;S.floor+=jump;S.currentMaze=makeMaze();S.moveCursor=0;text+=` B${old}F → B${S.floor}F`}else if(ev.effect==='shortcut'){const jump=1+Math.floor(Math.random()*3),old=S.floor;S.floor+=jump;S.currentMaze=makeMaze();S.moveCursor=0;text+=` B${old}F → B${S.floor}F`}addLog(`[${ev.label}] ${text}`,'environment');if(Math.random()<.80)say(text,5200)}
+function enterFreshFloor(nextFloor,reason=''){S.floor=nextFloor;S.currentMaze=makeMaze();S.currentMaze.cur=0;S.currentMaze.revealed=[0];S.currentMaze.edges=[];S.moveCursor=0;if(reason)addLog(`B${S.floor}F에 진입했습니다. · ${reason}`,'floor')}
+function runEnvironmentEvent(type){const ev=ENVIRONMENT_EVENTS[type];if(!ev)return;let text=pick(ev.texts);if(ev.effect==='collapse'){const jump=1+Math.floor(Math.random()*3),old=S.floor;enterFreshFloor(old+jump);text+=` B${old}F → B${S.floor}F`}else if(ev.effect==='shortcut'){const old=S.floor;enterFreshFloor(old+1);text+=` B${old}F → B${S.floor}F`}addLog(`[${ev.label}] ${text}`,'environment');if(Math.random()<.80)say(text,5200)}
 function runActionEvent(type){const ev=ACTION_EVENTS[type];if(!ev)return;const party=activeParty(),traitActors=party.filter(c=>(c.traits||[]).some(t=>ev.traits?.includes(t))),a=(traitActors.length&&Math.random()<.70)?pick(traitActors):eventActor();if(!a)return;const b=secondActor(a);if(['talk','trip','shareFood','cheer','joke'].includes(type)&&!b)return;const related=(a.traits||[]).filter(t=>ev.traits?.includes(t)&&ev.traitTexts?.[t]);const trait=related.length?pick(related):null;const pool=trait?ev.traitTexts[trait]:ev.texts;const text=fillText(pick(pool),a,b);addLog(`[${ev.label}] ${text}`,'action');if(Math.random()<.55)say(text,4800)}
 function runRareEvent(){const ev=RARE_EVENTS[pick(Object.keys(RARE_EVENTS))];if(!ev)return;const text=pick(ev.texts);S.rareEventsToday=(S.rareEventsToday||0)+1;addLog(`[희귀 · ${ev.label}] ${text}`,'rare');say(`희귀 이벤트 · ${text}`,6500)}
 function maybeRunRareEvent(){/* 정규 8시간에 평균 약 1회. MOVE_EVERY_MIN=2 기준 240번 이동 × 1/240 */const movesPerDay=Math.max(1,CFG.WORK_MIN/CFG.MOVE_EVERY_MIN),chance=CFG.RARE_PER_WORKDAY/movesPerDay;if(Math.random()<chance)runRareEvent()}
 function maybeRunEvent(){maybeRunRareEvent();if(Math.random()>=.12)return;const roll=Math.random();if(roll<.35)runJudgmentEvent(pick(Object.keys(JUDGMENT_EVENTS)));else if(roll<.62)runEnvironmentEvent(pick(Object.keys(ENVIRONMENT_EVENTS)));else runActionEvent(pick(Object.keys(ACTION_EVENTS)))}
-function moveParty(){if(!S.currentMaze)S.currentMaze=makeMaze();const m=S.currentMaze;if(S.moveCursor>=m.acts.length){S.floor++;S.currentMaze=makeMaze();S.moveCursor=0;addLog(`${S.floor}층에 진입했습니다.`);}const a=m.acts[S.moveCursor++];if(!a)return;m.cur=a[1];if(!m.revealed.includes(a[1]))m.revealed.push(a[1]);const k=[...a].sort((x,y)=>x-y).join("-");if(!m.edges.includes(k))m.edges.push(k);maybeRunEvent()}
+function moveParty(){if(!S.currentMaze)S.currentMaze=makeMaze();let m=S.currentMaze;if(S.moveCursor>=m.acts.length){enterFreshFloor(S.floor+1);addLog(`${S.floor}층에 진입했습니다.`);return}const a=m.acts[S.moveCursor++];if(!a)return;m.cur=a[1];if(!m.revealed.includes(a[1]))m.revealed.push(a[1]);const k=[...a].sort((x,y)=>x-y).join("-");if(!m.edges.includes(k))m.edges.push(k);maybeRunEvent()}
 function render(){renderTop();renderScene();renderControls();renderNightActions();}
 function renderTop(){const dungeon=S.screen==="dungeon";$("#topFloor").textContent=dungeon?`B${S.floor}F`:"";$("#topSub").textContent=dungeon?`${theme()} DUNGEON`:"";$("#dungeonHud").style.display=dungeon?"block":"none";$("#modeText").textContent=S.phase==="overtime"?"OVERTIME":S.phase==="work"?"WORK":"OFF";$("#menuBtn").style.display=dungeon?"block":"none"}
 function renderScene(){ticker.style.display="none";if(S.screen==="town")renderTown();else renderDungeon()}
