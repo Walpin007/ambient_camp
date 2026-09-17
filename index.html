@@ -25,7 +25,7 @@ button{appearance:none;border:2px solid var(--line);border-radius:0;background:#
 <main id="game"><section class="box stage"><div id="scene"></div><button id="menuBtn" class="menuBtn">MENU</button><div id="dungeonHud" class="hudCenter"><div id="topFloor" class="floor"></div><div id="topSub" class="hudTheme"></div></div><div id="modeText" class="modeHud">OFF</div><div id="message" class="message"></div><div id="wellnessBadge" class="wellnessBadge"></div><div id="nightActions" class="nightActions"></div><div id="ticker" class="ticker"><span id="tickerText"></span></div><div id="modal" class="modal"><div id="modalPanel" class="modalPanel"></div></div></section><section id="controls" class="controls"></section></main>
 <script>
 "use strict";
-const APP_VERSION="v0.3.3";
+const APP_VERSION="v0.3.4";
 const CFG={SAVE:"workday_ambient_v01",DEMO:true,DEMO_MINUTE_MS:500,WORK_MIN:480,WELLNESS_AT:50,WELLNESS_LEN:1,CYCLE:60,DINNER_MIN:30,MOVE_EVERY_MIN:2,MAX_PARTY:6,MAX_CHARACTERS:15,RARE_PER_WORKDAY:1};
 const THEMES=["폐허","용암","늪·수로","숲","보석·금광"];const TRAITS=["커피광","잠꾸러기","수다쟁이","과묵함","길치","호기심","겁쟁이","성급함","느긋함","먹보","깔끔함","덤벙댐","허세","장난꾸러기","꼼꼼함","부지런함","야행성","아침형","흥부자","긍정왕"];
 const $=s=>document.querySelector(s);const scene=$("#scene"),controls=$("#controls"),modal=$("#modal"),panel=$("#modalPanel"),msg=$("#message"),nightActions=$("#nightActions"),ticker=$("#ticker"),tickerText=$("#tickerText");
@@ -78,23 +78,36 @@ const RARE_EVENTS={
  kingdomClerk:{label:"왕국 행정관",texts:["왕국 직원이 던전까지 찾아와 서류 한 장에 확인 도장만 받고 돌아갔습니다. 파티는 이유를 묻지 못했습니다."]}
 };
 const ACTION_EVENTS={
- talk:{label:"대화",traits:["수다쟁이","과묵함"],texts:["{a}이(가) {b}에게 말을 걸었습니다. 두 사람은 걸으며 잠시 이야기를 나눕니다."],traitTexts:{"수다쟁이":["{a}의 이야기가 좀처럼 끝나지 않습니다. {b}은(는) 걸으면서 계속 듣고 있습니다."],"과묵함":["{a}이(가) 짧게 한마디 건넸습니다. {b}은(는) 그 한마디에 고개를 끄덕였습니다."]}},
- trip:{label:"발걸기",traits:["장난꾸러기","덤벙댐"],texts:["{a}이(가) 장난삼아 {b}의 발을 걸려다 아무 일도 없었던 척합니다."],traitTexts:{"장난꾸러기":["{a}이(가) {b}에게 슬쩍 발을 걸었습니다. 장난꾸러기다운 표정입니다."],"덤벙댐":["{a}이(가) {b}의 발을 걸려다 오히려 자기 발이 꼬였습니다."]}},
- shareFood:{label:"먹을 것 주기",traits:["먹보","긍정왕"],texts:["{a}이(가) 간식을 꺼내 {b}에게 나눠줬습니다."],traitTexts:{"먹보":["먹보인 {a}이(가) 아껴둔 간식을 {b}에게 나눠줬습니다. 꽤 큰 결심이었습니다."],"긍정왕":["{a}이(가) 웃으며 {b}에게 간식을 건넸습니다. 파티 분위기가 조금 밝아집니다."]}},
- hungry:{label:"배고파하기",traits:["먹보"],texts:["{a}의 배에서 작은 소리가 났습니다. 아직 갈 길이 남았습니다."],traitTexts:{"먹보":["먹보인 {a}이(가) 벌써 다음 식사 이야기를 꺼냈습니다."]}},
- cheer:{label:"응원하기",traits:["긍정왕","부지런함"],texts:["{a}이(가) {b}에게 조금만 더 힘내자고 응원했습니다."],traitTexts:{"긍정왕":["{a}이(가) 밝은 목소리로 {b}을(를) 응원했습니다. 괜히 다들 힘이 나는 기분입니다."],"부지런함":["{a}이(가) 묵묵히 앞장서며 {b}에게 계속 가보자고 손짓했습니다."]}},
- sing:{label:"노래부르기",traits:["흥부자","과묵함"],texts:["{a}이(가) 걷다가 작은 목소리로 노래를 흥얼거립니다."],traitTexts:{"흥부자":["흥이 오른 {a}이(가) 갑자기 노래를 부르기 시작했습니다. 던전에 목소리가 울려 퍼집니다."],"과묵함":["평소 과묵한 {a}이(가) 아주 작게 노래를 흥얼거립니다. 들은 사람은 {b}뿐인 것 같습니다."]}}
+ talk:{label:"대화",traits:["수다쟁이","과묵함"],texts:["{a:이} {b:에게} 말을 걸었습니다. 두 사람은 걸으며 잠시 이야기를 나눕니다."],traitTexts:{"수다쟁이":["{a:의} 이야기가 좀처럼 끝나지 않습니다. {b:은} 걸으면서 계속 듣고 있습니다."],"과묵함":["{a:이} 짧게 한마디 건넸습니다. {b:은} 그 한마디에 고개를 끄덕였습니다."]}},
+ trip:{label:"발걸기",traits:["장난꾸러기","덤벙댐"],texts:["{a:이} 장난삼아 {b:의} 발을 걸려다 아무 일도 없었던 척합니다."],traitTexts:{"장난꾸러기":["{a:이} {b:에게} 슬쩍 발을 걸었습니다. 장난꾸러기다운 표정입니다."],"덤벙댐":["{a:이} {b:의} 발을 걸려다 오히려 자기 발이 꼬였습니다."]}},
+ shareFood:{label:"먹을 것 주기",traits:["먹보","긍정왕"],texts:["{a:이} 간식을 꺼내 {b:에게} 나눠줬습니다."],traitTexts:{"먹보":["먹보인 {a:이} 아껴둔 간식을 {b:에게} 나눠줬습니다. 꽤 큰 결심이었습니다."],"긍정왕":["{a:이} 웃으며 {b:에게} 간식을 건넸습니다. 파티 분위기가 조금 밝아집니다."]}},
+ hungry:{label:"배고파하기",traits:["먹보"],texts:["{a:의} 배에서 작은 소리가 났습니다. 아직 갈 길이 남았습니다."],traitTexts:{"먹보":["먹보인 {a:이} 벌써 다음 식사 이야기를 꺼냈습니다."]}},
+ cheer:{label:"응원하기",traits:["긍정왕","부지런함"],texts:["{a:이} {b:에게} 조금만 더 힘내자고 응원했습니다."],traitTexts:{"긍정왕":["{a:이} 밝은 목소리로 {b:을} 응원했습니다. 괜히 다들 힘이 나는 기분입니다."],"부지런함":["{a:이} 묵묵히 앞장서며 {b:에게} 계속 가보자고 손짓했습니다."]}},
+ sing:{label:"노래부르기",traits:["흥부자","과묵함"],texts:["{a:이} 걷다가 작은 목소리로 노래를 흥얼거립니다."],traitTexts:{"흥부자":["흥이 오른 {a:이} 갑자기 노래를 부르기 시작했습니다. 던전에 목소리가 울려 퍼집니다."],"과묵함":["평소 과묵한 {a:이} 아주 작게 노래를 흥얼거립니다. 들은 사람은 {b:뿐}인 것 같습니다."]}},
+ coffee:{label:"커피 생각",traits:["커피광"],texts:["{a:이} 잠깐 멈춰 물통을 확인했습니다."],traitTexts:{"커피광":["{a:이} 던전 한복판에서 커피가 마시고 싶다고 중얼거립니다."]}},
+ yawn:{label:"하품",traits:["잠꾸러기","야행성","아침형"],texts:["{a:이} 크게 하품하고 다시 걸음을 옮깁니다."],traitTexts:{"잠꾸러기":["잠꾸러기 {a:이} 걷다가 연달아 하품합니다."],"야행성":["{a:이} 아직은 몸이 덜 풀린 듯 눈을 비빕니다."],"아침형":["{a:이} 하품하는 동료들을 보며 혼자 멀쩡한 표정을 짓습니다."]}},
+ guide:{label:"길 안내",traits:["길치","호기심"],texts:["{a:이} 갈림길을 한참 바라보다 한쪽을 가리킵니다."],traitTexts:{"길치":["길치인 {a:이} 아주 자신 있게 한쪽 길을 가리켰습니다. 파티원들이 잠시 서로를 바라봅니다."],"호기심":["{a:이} 아직 가보지 않은 통로가 궁금하다며 슬쩍 안을 들여다봅니다."]}},
+ nervous:{label:"주변 경계",traits:["겁쟁이"],texts:["{a:이} 주변 소리에 귀를 기울이며 조심스럽게 걷습니다."],traitTexts:{"겁쟁이":["{a:이} 멀리서 난 작은 소리에 깜짝 놀라 동료들 쪽으로 바짝 붙었습니다."]}},
+ hurry:{label:"앞서가기",traits:["성급함","부지런함"],texts:["{a:이} 잠시 앞서 걷다가 파티를 기다립니다."],traitTexts:{"성급함":["성급한 {a:이} 혼자 앞서가다 뒤늦게 멈춰 파티를 기다립니다."],"부지런함":["{a:이} 자연스럽게 선두로 나서 길을 살피며 걷습니다."]}},
+ rest:{label:"잠깐 쉬기",traits:["느긋함"],texts:["{a:이} 잠깐 벽에 기대 숨을 고릅니다."],traitTexts:{"느긋함":["느긋한 {a:이} 벽에 기대 잠시 쉬어가자며 자리를 잡았습니다."]}},
+ tidy:{label:"장비 정리",traits:["깔끔함","꼼꼼함"],texts:["{a:이} 걷던 중 장비를 한번 정리했습니다."],traitTexts:{"깔끔함":["{a:이} 옷과 장비에 묻은 먼지를 털어내고 만족스럽게 고개를 끄덕였습니다."],"꼼꼼함":["{a:이} 장비의 끈과 매듭을 하나씩 확인한 뒤 다시 출발합니다."]}},
+ stumble:{label:"휘청",traits:["덤벙댐"],texts:["{a:이} 돌부리에 걸릴 뻔했지만 균형을 잡았습니다."],traitTexts:{"덤벙댐":["덤벙대던 {a:이} 자기 발에 걸려 휘청했습니다. 아무도 못 본 척해줍니다."]}},
+ pose:{label:"허세",traits:["허세"],texts:["{a:이} 잠시 무기를 고쳐 잡고 주변을 둘러봅니다."],traitTexts:{"허세":["{a:이} 아무도 부탁하지 않았는데 멋진 자세를 잡았습니다. 몇 초 뒤 아무 일도 없었다는 듯 걷기 시작합니다."]}},
+ joke:{label:"장난",traits:["장난꾸러기"],texts:["{a:이} {b:에게} 작은 장난을 치고 먼저 웃었습니다."],traitTexts:{"장난꾸러기":["장난꾸러기 {a:이} {b:에게} 무언가 속삭였습니다. 잠시 뒤 둘 중 한 명이 웃음을 터뜨립니다."]}},
+ dance:{label:"흥얼흥얼",traits:["흥부자"],texts:["{a:이} 걸음에 맞춰 가볍게 몸을 흔듭니다."],traitTexts:{"흥부자":["흥이 오른 {a:이} 몇 걸음 동안 춤추듯 걸었습니다."]}}
 };
 function pick(a){return a[Math.floor(Math.random()*a.length)]}
 function eventActor(){const p=activeParty();return p.length?pick(p):null}
 function secondActor(first){const p=activeParty().filter(c=>c.id!==first?.id);return p.length?pick(p):null}
 function relativeStat(actor,key){const p=activeParty(),max=Math.max(1,...p.map(c=>Number(c.stats?.[key])||1)),value=Math.max(1,Number(actor.stats?.[key])||1);return Math.min(1,value/max)}
 function successChance(r){return r<=.10?.30:r<=.80?.50:.70}
-function fillText(t,a,b){return t.replaceAll('{name}',a?.name||'누군가').replaceAll('{a}',a?.name||'누군가').replaceAll('{b}',b?.name||'동료')}
+function hasBatchim(name){const ch=(name||"").slice(-1),code=ch.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28!==0;return null}
+function particle(name,pair){const [withB,withoutB]=pair.split('/'),b=hasBatchim(name);return name+(b===null?`(${withoutB})`:b?withB:withoutB)}
+function fillText(t,a,b){const A=a?.name||'누군가',B=b?.name||'동료';const forms={이:'이/가',은:'은/는',을:'을/를',과:'과/와',에게:'에게/에게',의:'의/의',뿐:'뿐/뿐'};return t.replace(/\{(name|a|b):([^}]+)\}/g,(_,who,key)=>particle(who==='b'?B:A,forms[key]||`${key}/${key}`)).replaceAll('{name}',A).replaceAll('{a}',A).replaceAll('{b}',B)}
 function judgmentText(ev,actor,ok){const related=(actor.traits||[]).filter(t=>ev.traits?.[t]);const trait=related.length?pick(related):null;const pool=trait?ev.traits[trait][ok?'success':'fail']:ev[ok?'success':'fail'];return fillText(pick(pool),actor)}
 function runJudgmentEvent(type){const ev=JUDGMENT_EVENTS[type],actor=eventActor();if(!ev||!actor)return;const stat=pick(ev.stats),ratio=relativeStat(actor,stat),chance=successChance(ratio),ok=Math.random()<chance;let text=judgmentText(ev,actor,ok);if(type==='treasure'&&ok){const g=2+Math.floor(Math.random()*7);if(S.phase==='work'){S.goldFound+=g;text+=` +${g}G`}else{S.otCoin+=1;text+=' 야근수당 +1◆'}}addLog(`[${ev.label}] ${text}`,'event');if(Math.random()<.70)say(text,5000)}
 function runEnvironmentEvent(type){const ev=ENVIRONMENT_EVENTS[type];if(!ev)return;let text=pick(ev.texts);if(ev.effect==='collapse'){const jump=1+Math.floor(Math.random()*3),old=S.floor;S.floor+=jump;S.currentMaze=makeMaze();S.moveCursor=0;text+=` B${old}F → B${S.floor}F`}else if(ev.effect==='shortcut'){const jump=1+Math.floor(Math.random()*3),old=S.floor;S.floor+=jump;S.currentMaze=makeMaze();S.moveCursor=0;text+=` B${old}F → B${S.floor}F`}addLog(`[${ev.label}] ${text}`,'environment');if(Math.random()<.80)say(text,5200)}
-function runActionEvent(type){const ev=ACTION_EVENTS[type],a=eventActor();if(!ev||!a)return;const b=secondActor(a);if(['talk','trip','shareFood','cheer'].includes(type)&&!b)return;const related=(a.traits||[]).filter(t=>ev.traits?.includes(t)&&ev.traitTexts?.[t]);const trait=related.length?pick(related):null;const pool=trait?ev.traitTexts[trait]:ev.texts;const text=fillText(pick(pool),a,b);addLog(`[${ev.label}] ${text}`,'action');if(Math.random()<.55)say(text,4800)}
+function runActionEvent(type){const ev=ACTION_EVENTS[type];if(!ev)return;const party=activeParty(),traitActors=party.filter(c=>(c.traits||[]).some(t=>ev.traits?.includes(t))),a=(traitActors.length&&Math.random()<.70)?pick(traitActors):eventActor();if(!a)return;const b=secondActor(a);if(['talk','trip','shareFood','cheer','joke'].includes(type)&&!b)return;const related=(a.traits||[]).filter(t=>ev.traits?.includes(t)&&ev.traitTexts?.[t]);const trait=related.length?pick(related):null;const pool=trait?ev.traitTexts[trait]:ev.texts;const text=fillText(pick(pool),a,b);addLog(`[${ev.label}] ${text}`,'action');if(Math.random()<.55)say(text,4800)}
 function runRareEvent(){const ev=RARE_EVENTS[pick(Object.keys(RARE_EVENTS))];if(!ev)return;const text=pick(ev.texts);S.rareEventsToday=(S.rareEventsToday||0)+1;addLog(`[희귀 · ${ev.label}] ${text}`,'rare');say(`희귀 이벤트 · ${text}`,6500)}
 function maybeRunRareEvent(){/* 정규 8시간에 평균 약 1회. MOVE_EVERY_MIN=2 기준 240번 이동 × 1/240 */const movesPerDay=Math.max(1,CFG.WORK_MIN/CFG.MOVE_EVERY_MIN),chance=CFG.RARE_PER_WORKDAY/movesPerDay;if(Math.random()<chance)runRareEvent()}
 function maybeRunEvent(){maybeRunRareEvent();if(Math.random()>=.12)return;const roll=Math.random();if(roll<.35)runJudgmentEvent(pick(Object.keys(JUDGMENT_EVENTS)));else if(roll<.62)runEnvironmentEvent(pick(Object.keys(ENVIRONMENT_EVENTS)));else runActionEvent(pick(Object.keys(ACTION_EVENTS)))}
